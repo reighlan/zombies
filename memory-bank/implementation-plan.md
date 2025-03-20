@@ -83,7 +83,7 @@ This plan outlines step-by-step instructions to build the base multiplayer game 
 
 **Step 10: Implement Basic Movement**
 
-* **Instruction**: In client/main.js, add keyboard controls (WASD) to update the local player’s x and z positions and send them to the server via Colyseus send.  
+* **Instruction**: In client/main.js, add keyboard controls (WASD) to update the local player's x and z positions and send them to the server via Colyseus send.  
 * **Details**: Send updates on key press/release; the server broadcasts them to all clients.  
 * **Test**: Move a player in one tab (e.g., press W) and confirm the cube moves in both tabs, maintaining synchronized positions.
 
@@ -92,7 +92,7 @@ This plan outlines step-by-step instructions to build the base multiplayer game 
 **Step 11: Add Server-Side Physics Check**
 
 * **Instruction**: In server/GameRoom.js, use Cannon.js to check player collisions (distance \< 1 unit) and update team state when a zombie "taps" a human.  
-* **Details**: If a zombie collides with a human, change the human’s team to "zombie", per Cursor Rule \#3.  
+* **Details**: If a zombie collides with a human, change the human's team to "zombie", per Cursor Rule \#3.  
 * **Test**: Move a zombie cube near a human cube in two tabs. Confirm the human cube turns green (zombie) in both tabs after contact.
 
 ---
@@ -124,7 +124,7 @@ This plan outlines step-by-step instructions to build the base multiplayer game 
 **Step 15: Deploy Frontend to Netlify**
 
 * **Instruction**: Push the client/ folder to a Netlify site, updating the Colyseus client URL in client/main.js to the Heroku WebSocket address.  
-* **Details**: Use Netlify’s drag-and-drop or CLI deployment.  
+* **Details**: Use Netlify's drag-and-drop or CLI deployment.  
 * **Test**: Open the Netlify URL in two browser tabs, join the game, and confirm both see synchronized cubes moving on the plane.
 
 ---

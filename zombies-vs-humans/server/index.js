@@ -1,8 +1,8 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('colyseus');
-const { Room } = require('colyseus');
 const PlayerSchema = require('../shared/PlayerSchema');
+const GameRoom = require('./GameRoom');
 
 // Test PlayerSchema (for Step 4)
 const testPlayer = new PlayerSchema();
@@ -11,25 +11,6 @@ testPlayer.x = 0;
 testPlayer.z = 0;
 testPlayer.team = "human";
 console.log("PlayerSchema test:", testPlayer);
-
-// Create a basic empty room for now
-class GameRoom extends Room {
-  onCreate(options) {
-    console.log("GameRoom created!", options);
-  }
-
-  onJoin(client, options) {
-    console.log("client joined!", client.sessionId);
-  }
-
-  onLeave(client) {
-    console.log(`Client ${client.id} left the room`);
-  }
-
-  onMessage(client, message) {
-    console.log(`Message from ${client.id}:`, message);
-  }
-}
 
 // Create Express app and HTTP server
 const app = express();

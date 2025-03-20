@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zombies vs Humans - Test Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        #connection-status {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+        }
+        #game-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+        }
+        #players-list {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Zombies vs Humans - Test Client</h1>
+    
+    <div id="connection-status">Connection Status: Disconnected</div>
+    
+    <button id="connect-btn">Connect to Server</button>
+    <button id="disconnect-btn" disabled>Disconnect</button>
+    
+    <div id="game-info">
+        <h2>Game Information</h2>
+        <div id="room-id">Room ID: None</div>
+        <div id="player-id">Player ID: None</div>
+    </div>
+    
+    <div id="players-list">
+        <h2>Players in Room</h2>
+        <ul id="players"></ul>
+    </div>
+    
+    <!-- Use the latest Colyseus.js client version to match our server -->
+    <script src="https://unpkg.com/colyseus.js@^0.16.0/dist/colyseus.js"></script>
+    <script>
+        // DOM Elements
+        const connectBtn = document.getElementById('connect-btn');
+        const disconnectBtn = document.getElementById('disconnect-btn');
+        const connectionStatus = document.getElementById('connection-status');
+        const roomIdElement = document.getElementById('room-id');
+        const playerIdElement = document.getElementById('player-id');
+        const playersList = document.getElementById('players');
+        
+        // Colyseus client
+        let client;
+        let room;
+        
+        // Connect to the Colyseus server
+        connectBtn.addEventListener('click', async () => {
+            try {
+                console.log("Attempting to connect to server...");
+                
+                // Initialize Colyseus client
+                client = new Colyseus.Client('ws://localhost:2567');
+                
+                // Join the game room
+                room = await client.joinOrCreate('game_room');
+                console.log("Successfully joined room:", room);
+                
+                // Update connection status
+                connectionStatus.textContent = 'Connection Status: Connected';
+                connectionStatus.style.backgroundColor = '#d4ffda';
+                
+                // Update buttons
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                
+                // Update game info
+                roomIdElement.textContent = `Room ID: ${room.roomId || room.id}`;
+                playerIdElement.textContent = `Player ID: ${room.sessionId}`;
+                
+                // Debug the room state 
+                console.log("Initial room state:", room.state);
+                
+                // Set up room state change listener
+                room.onStateChange((state) => {
+                    console.log("State changed:", state);
+                    if (state && state.players) {
+                        updatePlayersList(state.players);
+                    } else {
+                        console.warn("Received state change but players collection is missing");
+                    }
+                });
+                
+                // Handle room leave
+                room.onLeave((code) => {
+                    console.log("Left room with code:", code);
+                    connectionStatus.textContent = `Connection Status: Disconnected (Code: ${code})`;
+                    connectionStatus.style.backgroundColor = '#ffdddd';
+                    resetUI();
+                });
+                
+                console.log("Connected to game room!");
+            } catch (error) {
+                console.error("Error connecting to server:", error);
+                connectionStatus.textContent = `Connection Status: Error - ${error.message}`;
+                connectionStatus.style.backgroundColor = '#ffdddd';
+            }
+        });
+        
+        // Disconnect from the server
+        disconnectBtn.addEventListener('click', () => {
+            console.log("Disconnecting from server...");
+            if (room) {
+                room.leave();
+                room = null;
+            }
+            
+            // Reset UI
+            resetUI();
+            console.log("Disconnected from server");
+        });
+        
+        // Update the players list
+        function updatePlayersList(players) {
+            console.log("Updating players list:", players);
+            
+            // Clear the list
+            playersList.innerHTML = '';
+            
+            if (!players) {
+                const li = document.createElement('li');
+                li.textContent = 'No player data available';
+                playersList.appendChild(li);
+                return;
+            }
+            
+            // Check if players is iterable
+            if (players.forEach) {
+                // Add each player to the list
+                players.forEach((player, key) => {
+                    console.log("Player:", player, "Key:", key);
+                    const li = document.createElement('li');
+                    li.textContent = `Player ${player.id} - Position: (${player.x}, ${player.z}) - Team: ${player.team}`;
+                    li.style.color = player.team === 'human' ? 'blue' : 'green';
+                    playersList.appendChild(li);
+                });
+                
+                // If no players, show a message
+                if (players.size === 0) {
+                    const li = document.createElement('li');
+                    li.textContent = 'No players in the room';
+                    playersList.appendChild(li);
+                }
+            } else {
+                console.error("Players is not iterable:", players);
+                const li = document.createElement('li');
+                li.textContent = 'Error: Player data is not in expected format';
+                playersList.appendChild(li);
+            }
+        }
+        
+        // Reset the UI
+        function resetUI() {
+            connectBtn.disabled = false;
+            disconnectBtn.disabled = true;
+            roomIdElement.textContent = 'Room ID: None';
+            playerIdElement.textContent = 'Player ID: None';
+            playersList.innerHTML = '';
+            const li = document.createElement('li');
+            li.textContent = 'No players in the room';
+            playersList.appendChild(li);
+        }
+    </script>
+</body>
+</html> 
