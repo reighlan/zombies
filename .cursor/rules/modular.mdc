@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Modular Architecture Over Monoliths
+Rule: Structure your codebase into multiple, small, focused modules (e.g., separate files for player movement, rendering, networking) instead of a single giant file. Store these in logical directories like src/networking/ or src/rendering/.
+
+Implementation: Use Cursor’s project rules in .cursor/rules with glob patterns (e.g., src/**/*.js) to enforce modular conventions per directory.
+
+Why: Modularity improves readability, debugging, and scalability, preventing the chaos of a monolithic file that’s hard to maintain.
+

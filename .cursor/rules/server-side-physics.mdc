@@ -1,0 +1,6 @@
+---
+description: 
+globs: server/**/*.js
+alwaysApply: false
+---
+Run physics simulations (e.g., with Cannon.js) on the server via Node.js to maintain a single, authoritative game state, sending updates to ThreeJS clients.

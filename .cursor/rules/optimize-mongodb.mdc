@@ -1,0 +1,15 @@
+---
+description: 
+globs: db/**/*.js
+alwaysApply: false
+---
+
+# Your rule content
+**Rule:** Use MongoDB for persistent data (e.g., player stats) and leverage cursors to fetch large datasets in batches, avoiding full memory loads.
+
+**Implementation:** Define a `.cursor/rules/database.md` rule for `db/**/*.js` to encourage cursor usage and indexing.
+
+**Why:** Efficient data handling reduces memory overhead and speeds up queries, vital for scalability.
+
+- You can @ files here
+- You can use markdown but dont have to

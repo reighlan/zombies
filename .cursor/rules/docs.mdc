@@ -1,0 +1,14 @@
+---
+description: 
+globs: **/*.js
+alwaysApply: false
+---
+
+# Your rule content
+**Rule:** Use JSDoc to document all modules and functions, keeping code self-explanatory for team collaboration.
+
+**Implementation:** Enforce via a `.cursor/rules/docs.md` rule applying to `**/*.js` with JSDoc examples.
+
+**Why:** Good documentation speeds up onboarding and maintains long-term code clarity.
+- You can @ files here
+- You can use markdown but dont have to

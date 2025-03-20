@@ -1,0 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+**Rule:** Implement error handling and logging on both client and server (e.g., Winston for Node.js) to catch and track issues.
+
+**Implementation:** Add a global rule in Cursor Settings > Rules for AI: “Always include try-catch blocks and log errors.”
+
+**Why:** Reliable error tracking ensures stability and simplifies debugging in production.
+
+- You can @ files here
+- You can use markdown but dont have to

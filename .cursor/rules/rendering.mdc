@@ -1,0 +1,10 @@
+---
+description: 
+globs: client/**/*.js`
+alwaysApply: false
+---
+
+# Your rule content
+**Rule:** Minimize draw calls in ThreeJS by grouping objects with shared materials and using instancing for repeated geometry.
+- You can @ files here
+- You can use markdown but dont have to

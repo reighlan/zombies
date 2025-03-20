@@ -1,0 +1,11 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+**Rule:** Sync game state from server to clients using Colyseus’s delta compression, sending only state changes instead of full updates.
+
+- You can @ files here
+- You can use markdown but dont have to

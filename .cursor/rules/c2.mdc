@@ -1,0 +1,11 @@
+---
+description: Use Colyseus to manage real-time multiplayer features. Define game rooms with explicit `onJoin`, `onLeave`, and `onMessage` handlers to streamline player interactions.
+globs: 
+alwaysApply: false
+---
+## 2. Leverage Colyseus for Networking
+**Rule:** Use Colyseus to manage real-time multiplayer features. Define game rooms with explicit `onJoin`, `onLeave`, and `onMessage` handlers to streamline player interactions.
+
+**Implementation:** Create a rule in `.cursor/rules/networking.md` with `@file` references to Colyseus schema files for context.
+
+**Why:** Colyseus ensures efficient state synchronization and low-latency communication, critical for multiplayer games.
