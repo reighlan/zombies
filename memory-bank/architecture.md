@@ -8,7 +8,9 @@ The application follows a modular architecture with clear separation of concerns
 zombies-vs-humans/
 ├── client/            # Frontend code (ThreeJS)
 ├── server/            # Backend code (Node.js, Colyseus)
+│   └── index.js       # Main server entry point
 ├── shared/            # Shared schemas and utilities
+│   └── PlayerSchema.js # Player data schema
 └── package.json       # Project dependencies and scripts
 ```
 
@@ -30,11 +32,27 @@ Contains all backend-related code:
 - Physics calculations
 - Win condition checking
 
+#### `server/index.js`
+Main server entry point that:
+- Sets up Express for HTTP handling
+- Creates and configures the Colyseus server
+- Defines the GameRoom class with event handlers (onCreate, onJoin, onLeave, onMessage)
+- Registers the game room with Colyseus
+- Configures static file serving
+- Starts the server on port 2567
+
 ### `shared/`
 Contains code shared between client and server:
 - Schema definitions for state synchronization
 - Constants and configuration
 - Utility functions for common operations
+
+#### `shared/PlayerSchema.js`
+Defines the data structure for player entities:
+- Uses Colyseus Schema system for efficient state synchronization
+- Contains player position (x, z), team affiliation, and unique identifier
+- Provides type definitions for each property to ensure data integrity
+- Acts as the contract between server and client for player data representation
 
 ## Design Principles
 

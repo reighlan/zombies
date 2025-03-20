@@ -37,3 +37,49 @@ All tests passed for Step 2:
   - cannon-es@0.20.0
 
 Note: There was a warning about Colyseus requiring Node.js 20.x while the current version is 18.17.1. This should be monitored if any compatibility issues arise.
+
+### Step 3: Set Up Basic Server with Colyseus
+
+- Created `server/index.js` with a basic Node.js server configuration:
+  - Set up Express app for HTTP handling
+  - Created an HTTP server
+  - Initialized Colyseus server using the HTTP server
+  - Defined an empty `GameRoom` class extending Colyseus.Room with basic handlers:
+    - `onCreate`: Logs when a room is created
+    - `onJoin`: Logs when a client joins
+    - `onLeave`: Logs when a client leaves
+    - `onMessage`: Logs received messages
+  - Registered the `GameRoom` class as "game_room" in Colyseus
+  - Added middleware to serve static files from the client directory
+  - Configured the server to listen on port 2567
+
+All tests passed for Step 3:
+- Server starts without crashing
+- Successfully logs "Server running on port 2567" to the console
+- Properly initializes the Colyseus server and registers the game room
+
+The implementation follows Cursor Rule #2, leveraging Colyseus for multiplayer networking with explicit handler methods for different connection events.
+
+### Step 4: Define Player State Schema
+
+- Created `shared/PlayerSchema.js` with a Colyseus schema for player data:
+  - Used `@colyseus/schema` for efficient state synchronization
+  - Defined the following properties:
+    - `x` (number): Player's x-coordinate position
+    - `z` (number): Player's z-coordinate position
+    - `team` (string): Player's team ("human" or "zombie")
+    - `id` (string): Unique player identifier
+  - Set default values in the constructor
+  - Added proper JSDoc documentation
+
+- Tested the schema by:
+  - Importing it in `server/index.js`
+  - Creating a test instance with sample values
+  - Logging the instance to verify structure
+
+All tests passed for Step 4:
+- Successfully imported the schema in server/index.js
+- Console output confirms the schema has the expected properties
+- Schema structure matches the requirements with proper typing
+
+The schema will enable efficient state synchronization between server and clients, transmitting only the data that changes rather than the entire game state.
