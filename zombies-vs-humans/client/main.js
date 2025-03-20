@@ -3,7 +3,8 @@
  * 
  * This file handles the ThreeJS setup and rendering, creating the 3D scene
  * that will be used for the game. It initializes the scene, camera, renderer,
- * and basic ground plane.
+ * and basic ground plane. It also connects to the Colyseus server for multiplayer
+ * functionality.
  */
 
 // Import Three.js from the CDN since we're not using a bundler
@@ -12,6 +13,26 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.m
 // Global variables
 let scene, camera, renderer;
 let groundPlane;
+
+// Colyseus client variables
+/** @type {import('colyseus.js').Client} */
+let client;
+/** @type {import('colyseus.js').Room} */
+let room;
+
+// Debug element reference
+const debugElement = document.getElementById('debug');
+
+/**
+ * Update the debug information display
+ * @param {string} message - The message to display
+ */
+function updateDebug(message) {
+  if (debugElement) {
+    debugElement.textContent = message;
+  }
+  console.log(message);
+}
 
 /**
  * Initialize the ThreeJS scene, camera, and renderer
@@ -71,6 +92,63 @@ function createGround() {
 }
 
 /**
+ * Connect to the Colyseus server and join the game room
+ * @returns {Promise<void>} A promise that resolves when connected
+ */
+async function connectToServer() {
+  try {
+    updateDebug("Connecting to Colyseus server...");
+    
+    // Ensure Colyseus is defined as a global object
+    if (typeof window.Colyseus === 'undefined') {
+      throw new Error('Colyseus library not loaded. Check your script tags.');
+    }
+    
+    // Create a Colyseus client instance using the global Colyseus object
+    client = new window.Colyseus.Client('ws://localhost:2567');
+    
+    // Join or create the game_room
+    room = await client.joinOrCreate('game_room');
+    console.log("Room:", room);
+    
+    // Log the player's session ID
+    updateDebug(`Connected! Player ID: ${room.sessionId}`);
+    
+    // Set up room state change listener for future steps
+    room.onStateChange((state) => {
+      console.log("State updated:", state);
+      
+      if (state.players) {
+        const playerCount = state.players.size;
+        updateDebug(`Connected as ${room.sessionId} | Players: ${playerCount}`);
+        
+        // Log details of all players
+        state.players.forEach((player, key) => {
+          console.log(`Player ${key}: Team=${player.team}, Position=(${player.x}, ${player.z})`);
+        });
+      }
+    });
+    
+    // Handle room leave event
+    room.onLeave((code) => {
+      updateDebug(`Disconnected (Code: ${code})`);
+    });
+    
+    // Handle room error event
+    room.onError((code, message) => {
+      updateDebug(`Error: ${message} (Code: ${code})`);
+      console.error(`Room error: ${code} - ${message}`);
+    });
+    
+    return room;
+  } catch (error) {
+    updateDebug(`Connection failed: ${error.message}`);
+    console.error("Failed to connect to Colyseus server:", error);
+    throw error;
+  }
+}
+
+/**
  * Handle window resize events to maintain proper aspect ratio
  */
 function handleResize() {
@@ -95,7 +173,7 @@ function animate() {
 /**
  * Initialize the game scene and start the render loop
  */
-function init() {
+async function init() {
   console.log('Initializing ThreeJS scene...');
   
   // Set up the scene, camera, and renderer
@@ -111,6 +189,13 @@ function init() {
   animate();
   
   console.log('ThreeJS scene initialized successfully');
+  
+  // Connect to the Colyseus server
+  try {
+    await connectToServer();
+  } catch (error) {
+    console.error('Could not connect to multiplayer server:', error);
+  }
 }
 
 // Start the initialization when the page loads

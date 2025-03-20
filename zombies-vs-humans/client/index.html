@@ -16,11 +16,29 @@
             height: 100vh;
             display: block;
         }
+        #debug {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            border-radius: 5px;
+            pointer-events: none;
+        }
     </style>
+    
+    <!-- Load Colyseus in the head to ensure it's available before any scripts run -->
+    <script src="https://unpkg.com/colyseus.js@^0.16.0/dist/colyseus.js""></script>
 </head>
 <body>
     <!-- Canvas element for ThreeJS rendering -->
     <canvas id="gameCanvas"></canvas>
+    
+    <!-- Debug information overlay -->
+    <div id="debug">Connecting to server...</div>
     
     <!-- Load main JavaScript file as a module to support ES6 imports -->
     <script type="module" src="main.js"></script>

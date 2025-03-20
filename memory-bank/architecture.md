@@ -40,6 +40,8 @@ Main game JavaScript file that:
 - Sets up the ThreeJS scene, camera, and renderer
 - Creates a 3D environment with a ground plane
 - Handles game rendering and animation loop
+- Connects to the Colyseus multiplayer server
+- Manages room connection and state synchronization
 - Implements responsive design via window resize handling
 - Uses modular function design with proper documentation
 - Will implement game logic and player interactions
@@ -86,6 +88,25 @@ Defines the data structure for player entities:
 - Contains player position (x, z), team affiliation, and unique identifier
 - Provides type definitions for each property to ensure data integrity
 - Acts as the contract between server and client for player data representation
+
+## Communication Flow
+
+1. **Client Initialization**:
+   - ThreeJS sets up the 3D scene and rendering
+   - Colyseus client connects to the server via WebSocket
+   - Client joins the game room and receives a unique session ID
+
+2. **State Synchronization**:
+   - Server maintains authoritative game state
+   - Changes to game state are broadcast to all connected clients
+   - Clients receive state updates and render accordingly
+   - Only changed properties are transmitted to minimize bandwidth
+
+3. **Player Interaction**:
+   - Client captures player input
+   - Input is sent to the server via Colyseus messages
+   - Server validates input and updates game state
+   - Updated state is synchronized to all clients
 
 ## Design Principles
 

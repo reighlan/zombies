@@ -160,3 +160,33 @@ All tests passed for Step 7:
 - The canvas resizes appropriately when the browser window changes size
 
 The implementation provides a solid foundation for the game's visual aspects, with a clean modular structure and comprehensive documentation following the docs rule. The scene is now ready for adding player representations and game elements in future steps.
+
+### Step 8: Connect Client to Server (Revised)
+
+- Fixed the Colyseus client integration with the following changes:
+  - Updated `client/index.html` to load Colyseus in the head section:
+    - Used a specific version (0.14.13) for compatibility
+    - Ensured the library loads before any other scripts
+    - Added a debug overlay to display connection status
+  
+  - Enhanced `client/main.js` with robust connection handling:
+    - Added proper JSDoc type annotations for Colyseus objects
+    - Explicitly used the global `window.Colyseus` object for reliability
+    - Added error checking to verify Colyseus is available
+    - Implemented comprehensive error handling and status updates
+    - Created an updateDebug function to display connection status
+
+  - Created `client/colyseus-test.html` as a standalone connection testing tool:
+    - Simple UI for testing Colyseus connectivity independently
+    - Detailed logging of connection events and state updates
+    - Manual connect/disconnect functionality
+    - Helpful for debugging connection issues
+
+All tests passed for Step 8:
+- Server logs show client connections when the game page loads
+- The client successfully connects to the Colyseus server
+- The debug overlay displays the connection status and player ID
+- No "Colyseus is not defined" errors appear in the console
+- The ThreeJS scene continues to render correctly during connection
+
+This implementation properly integrates the client-side ThreeJS rendering with the Colyseus multiplayer backend. The separation between the rendering engine and networking code follows good modular design principles, with proper error handling and diagnostic capabilities for troubleshooting.

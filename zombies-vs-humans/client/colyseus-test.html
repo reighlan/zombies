@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colyseus Connection Test</title>
+    <script src="https://unpkg.com/colyseus.js@0.14.13/dist/colyseus.js"></script>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .connecting {
+            background-color: #ffffcc;
+        }
+        .success {
+            background-color: #ccffcc;
+        }
+        .error {
+            background-color: #ffcccc;
+        }
+        #log {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Colyseus Connection Test</h1>
+    <div id="status" class="connecting">Waiting for connection...</div>
+    <button id="connect">Connect to Server</button>
+    <button id="disconnect" disabled>Disconnect</button>
+    <h2>Connection Log:</h2>
+    <div id="log"></div>
+
+    <script>
+        // Elements
+        const statusElement = document.getElementById('status');
+        const logElement = document.getElementById('log');
+        const connectButton = document.getElementById('connect');
+        const disconnectButton = document.getElementById('disconnect');
+        
+        // Colyseus client and room
+        let client;
+        let room;
+        
+        // Logging function
+        function log(message) {
+            const entry = document.createElement('div');
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        // Update status
+        function updateStatus(message, type) {
+            statusElement.textContent = message;
+            statusElement.className = type;
+        }
+        
+        // Connect to the server
+        async function connect() {
+            try {
+                updateStatus('Connecting to server...', 'connecting');
+                log('Creating Colyseus client...');
+                
+                // Create a client
+                client = new Colyseus.Client('ws://localhost:2567');
+                
+                log('Joining game room...');
+                // Join a room
+                room = await client.joinOrCreate('game_room');
+                
+                // Success!
+                updateStatus(`Connected! Room ID: ${room.id}, Session ID: ${room.sessionId}`, 'success');
+                log(`Connected to room ${room.id} with session ID ${room.sessionId}`);
+                
+                // Update buttons
+                connectButton.disabled = true;
+                disconnectButton.disabled = false;
+                
+                // Set up event listeners
+                room.onStateChange((state) => {
+                    log(`State updated: ${JSON.stringify(state)}`);
+                });
+                
+                room.onLeave((code) => {
+                    log(`Left room with code: ${code}`);
+                    updateStatus('Disconnected', 'error');
+                    connectButton.disabled = false;
+                    disconnectButton.disabled = true;
+                });
+                
+                room.onError((code, message) => {
+                    log(`Error: ${message} (code: ${code})`);
+                    updateStatus(`Error: ${message}`, 'error');
+                });
+                
+            } catch (error) {
+                updateStatus(`Connection failed: ${error.message}`, 'error');
+                log(`Error: ${error.message}`);
+                connectButton.disabled = false;
+                disconnectButton.disabled = true;
+            }
+        }
+        
+        // Disconnect from the server
+        function disconnect() {
+            if (room) {
+                log('Disconnecting...');
+                room.leave();
+                room = null;
+            }
+        }
+        
+        // Event listeners
+        connectButton.addEventListener('click', connect);
+        disconnectButton.addEventListener('click', disconnect);
+    </script>
+</body>
+</html> 
