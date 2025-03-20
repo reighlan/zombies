@@ -33,11 +33,15 @@ Main game HTML file that:
 - Provides a canvas element for ThreeJS rendering
 - Loads the main.js script for game logic
 - Sets up viewport and basic styling
+- Uses ES6 modules for modern JavaScript imports
 
 #### `client/main.js`
 Main game JavaScript file that:
 - Sets up the ThreeJS scene, camera, and renderer
-- Handles game rendering and animation
+- Creates a 3D environment with a ground plane
+- Handles game rendering and animation loop
+- Implements responsive design via window resize handling
+- Uses modular function design with proper documentation
 - Will implement game logic and player interactions
 
 #### `client/test-client.html`
@@ -90,5 +94,6 @@ Defines the data structure for player entities:
 3. **Efficient Synchronization**: Only changes to game state are transmitted to minimize bandwidth usage.
 4. **Clean Separation**: Frontend and backend concerns are strictly separated to improve maintainability.
 5. **Schema-Based State**: Using Colyseus schema system ensures efficient serialization and type safety.
+6. **Documentation-First**: All code is thoroughly documented with JSDoc comments for clarity and maintainability.
 
 This architecture supports the multiplayer nature of the game while maintaining clean code organization and efficient networking.
