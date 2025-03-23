@@ -35,6 +35,9 @@ class GameRoom extends Room {
     // Set the room state
     this.setState(new GameState());
     
+    // Register message handlers for specific message types
+    this.onMessage("move", this.handleMoveMessage.bind(this));
+    
     // Log room creation with any options
     console.log("Room created with options:", options);
   }
@@ -82,15 +85,23 @@ class GameRoom extends Room {
   }
 
   /**
-   * Called when a client sends a message to the room
+   * Handler for move messages
    * 
    * @param {object} client - The client that sent the message
-   * @param {object} message - The message data
+   * @param {object} data - The position data {x, z}
    */
-  onMessage(client, message) {
-    console.log(`Message from ${client.sessionId}:`, message);
+  handleMoveMessage(client, data) {
+    // Get the player from the state
+    const player = this.state.players.get(client.sessionId);
     
-    // Message handling will be implemented in future steps
+    // If player exists, update position
+    if (player) {
+      // Update player position
+      player.x = data.x;
+      player.z = data.z;
+      
+      console.log(`Player ${player.id} moved to (${player.x}, ${player.z})`);
+    }
   }
 }
 

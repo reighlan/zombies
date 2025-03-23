@@ -24,6 +24,17 @@ let room;
 /** @type {Map<string, THREE.Mesh>} */
 const playerMeshes = new Map();
 
+// Movement variables
+const keys = {
+  w: false,
+  a: false,
+  s: false,
+  d: false
+};
+const MOVEMENT_SPEED = 0.1; // Units per frame
+let lastMovementUpdate = 0;
+const MOVEMENT_UPDATE_RATE = 50; // Send updates every 50ms
+
 // Debug element reference
 const debugElement = document.getElementById('debug');
 
@@ -93,6 +104,85 @@ function createGround() {
   
   // Add the ground plane to the scene
   scene.add(groundPlane);
+}
+
+/**
+ * Set up keyboard event listeners for player movement
+ */
+function setupMovementControls() {
+  // Key down event
+  window.addEventListener('keydown', (e) => {
+    // Update key states
+    if (e.key.toLowerCase() === 'w') keys.w = true;
+    if (e.key.toLowerCase() === 'a') keys.a = true;
+    if (e.key.toLowerCase() === 's') keys.s = true;
+    if (e.key.toLowerCase() === 'd') keys.d = true;
+  });
+  
+  // Key up event
+  window.addEventListener('keyup', (e) => {
+    // Update key states
+    if (e.key.toLowerCase() === 'w') keys.w = false;
+    if (e.key.toLowerCase() === 'a') keys.a = false;
+    if (e.key.toLowerCase() === 's') keys.s = false;
+    if (e.key.toLowerCase() === 'd') keys.d = false;
+  });
+}
+
+/**
+ * Update player position based on keyboard input
+ */
+function updatePlayerPosition() {
+  if (!room || !room.state || !room.state.players) return;
+  
+  // Get the local player
+  const localPlayer = room.state.players.get(room.sessionId);
+  if (!localPlayer) return;
+  
+  // Calculate movement
+  let moved = false;
+  let dx = 0;
+  let dz = 0;
+  
+  // Apply movement based on keys
+  if (keys.w) {
+    dz -= MOVEMENT_SPEED;
+    moved = true;
+  }
+  if (keys.s) {
+    dz += MOVEMENT_SPEED;
+    moved = true;
+  }
+  if (keys.a) {
+    dx -= MOVEMENT_SPEED;
+    moved = true;
+  }
+  if (keys.d) {
+    dx += MOVEMENT_SPEED;
+    moved = true;
+  }
+  
+  // If player moved, send update to server
+  if (moved) {
+    const now = Date.now();
+    
+    // Limit the update rate to avoid flooding the server
+    if (now - lastMovementUpdate > MOVEMENT_UPDATE_RATE) {
+      // Calculate new position
+      const newX = localPlayer.x + dx;
+      const newZ = localPlayer.z + dz;
+      
+      // Ensure the player stays within the ground plane bounds (10x10)
+      const boundedX = Math.max(-5, Math.min(5, newX));
+      const boundedZ = Math.max(-5, Math.min(5, newZ));
+      
+      // Send the position update to the server
+      room.send('move', { x: boundedX, z: boundedZ });
+      
+      // Update timestamp
+      lastMovementUpdate = now;
+    }
+  }
 }
 
 /**
@@ -258,6 +348,11 @@ function handleResize() {
  */
 function animate() {
   requestAnimationFrame(animate);
+  
+  // Update player position based on keyboard input
+  updatePlayerPosition();
+  
+  // Render the scene
   renderer.render(scene, camera);
 }
 
@@ -272,6 +367,9 @@ async function init() {
   
   // Create the ground plane
   createGround();
+  
+  // Set up keyboard controls
+  setupMovementControls();
   
   // Set up event handlers
   handleResize();

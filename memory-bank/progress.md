@@ -218,3 +218,33 @@ All tests passed for Step 9:
 - Console logs show the correct team assignments and mesh creation
 
 This implementation enables visual representation of players based on their team, following the cursor rule for server-side authority while providing real-time visual feedback to the player. The system is ready for adding movement in the next step.
+
+### Step 10: Implement Basic Movement
+
+- Enhanced `client/main.js` with keyboard controls for player movement:
+  - Added key state tracking for WASD keys
+  - Implemented movement variables and constants:
+    - `MOVEMENT_SPEED`: Controls how quickly players move
+    - `MOVEMENT_UPDATE_RATE`: Limits how frequently position updates are sent to the server
+  - Created new functions for movement:
+    - `setupMovementControls()`: Sets up keyboard event listeners
+    - `updatePlayerPosition()`: Calculates movement based on key states and sends updates to server
+  - Updated the animation loop to include movement updates
+  - Added bounds checking to keep players within the ground plane
+  - Implemented rate limiting to prevent flooding the server with updates
+
+- Updated `server/GameRoom.js` to handle movement messages:
+  - Enhanced the `onMessage` method to process 'move' message type
+  - Added server-side position updates for players
+  - Implemented server-side logging of player movements
+  - Ensured the server remains the authority for player positions
+
+All tests passed for Step 10:
+- Players can be controlled using WASD keys
+- Movement is properly synchronized across multiple browser tabs
+- Movement updates are sent to the server and broadcast to all clients
+- Player positions remain consistent between different clients
+- Players stay within the boundaries of the ground plane
+- Movement feels responsive while maintaining network efficiency
+
+This implementation follows the server authority principle by having the server validate and broadcast all position updates. The client sends movement intentions, but the actual position updates are handled authoritatively by the server, which prevents cheating while maintaining responsive gameplay.
