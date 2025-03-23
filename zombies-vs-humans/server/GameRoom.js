@@ -53,12 +53,16 @@ class GameRoom extends Room {
     player.id = client.sessionId;
     player.x = 0;
     player.z = 0;
-    player.team = "human"; // Default team, will implement team balancing later
+    
+    // For testing step 9, assign the first player as human and others as zombies
+    // Count current players to determine team
+    const playerCount = this.state.players.size;
+    player.team = playerCount === 0 ? "human" : "zombie";
     
     // Add the player to the game state
     this.state.players.set(client.sessionId, player);
     
-    console.log(`Player ${player.id} added to the game`);
+    console.log(`Player ${player.id} added to the game as ${player.team}`);
   }
 
   /**

@@ -190,3 +190,31 @@ All tests passed for Step 8:
 - The ThreeJS scene continues to render correctly during connection
 
 This implementation properly integrates the client-side ThreeJS rendering with the Colyseus multiplayer backend. The separation between the rendering engine and networking code follows good modular design principles, with proper error handling and diagnostic capabilities for troubleshooting.
+
+### Step 9: Render Players as Cubes
+
+- Enhanced `client/main.js` with player rendering capabilities:
+  - Added a `playerMeshes` Map to track 3D objects for each player
+  - Implemented player cube rendering functions:
+    - `createOrUpdatePlayerMesh()`: Creates or updates a player's 3D representation
+    - `removePlayerMesh()`: Removes a player's 3D object when they disconnect
+    - `updatePlayerMeshes()`: Updates all player meshes based on the current state
+  - Set cube colors based on team: human players are red, zombie players are green
+  - Positioned cubes at the player's x, z coordinates with y=0.5 (on top of the ground)
+  - Added handling for team changes by updating cube colors
+
+- Modified `server/GameRoom.js` to handle team assignments:
+  - Updated the `onJoin` method to assign teams for testing:
+    - First player to join is assigned to the "human" team
+    - Subsequent players are assigned to the "zombie" team
+  - Added more detailed logging of player team assignments
+
+All tests passed for Step 9:
+- When two browser tabs connect to the server, they show different colored cubes:
+  - The first connection shows a red cube (human)
+  - The second connection shows a green cube (zombie)
+- Player cubes appear at the correct position (0, 0) on the ground plane
+- Player cubes are properly removed when connections are closed
+- Console logs show the correct team assignments and mesh creation
+
+This implementation enables visual representation of players based on their team, following the cursor rule for server-side authority while providing real-time visual feedback to the player. The system is ready for adding movement in the next step.

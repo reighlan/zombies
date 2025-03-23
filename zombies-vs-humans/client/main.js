@@ -20,6 +20,10 @@ let client;
 /** @type {import('colyseus.js').Room} */
 let room;
 
+// Player objects map - stores ThreeJS objects for each player
+/** @type {Map<string, THREE.Mesh>} */
+const playerMeshes = new Map();
+
 // Debug element reference
 const debugElement = document.getElementById('debug');
 
@@ -92,6 +96,90 @@ function createGround() {
 }
 
 /**
+ * Create or update a player mesh based on player state
+ * @param {string} id - The player's unique ID
+ * @param {Object} playerData - The player's state data
+ */
+function createOrUpdatePlayerMesh(id, playerData) {
+  // Get the player mesh if it exists
+  let playerMesh = playerMeshes.get(id);
+  
+  // If the player mesh doesn't exist, create it
+  if (!playerMesh) {
+    // Create a 1x1x1 cube geometry
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    
+    // Create material based on team (human = red, zombie = green)
+    const material = new THREE.MeshBasicMaterial({
+      color: playerData.team === 'human' ? 0xff0000 : 0x00ff00
+    });
+    
+    // Create the mesh
+    playerMesh = new THREE.Mesh(geometry, material);
+    
+    // Add the mesh to the scene
+    scene.add(playerMesh);
+    
+    // Store the mesh in the playerMeshes map
+    playerMeshes.set(id, playerMesh);
+    
+    console.log(`Created ${playerData.team} cube for player ${id}`);
+  } else {
+    // Update the material color if the team changed
+    const color = playerData.team === 'human' ? 0xff0000 : 0x00ff00;
+    if (playerMesh.material.color.getHex() !== color) {
+      playerMesh.material.color.setHex(color);
+      console.log(`Updated player ${id} color to ${playerData.team}`);
+    }
+  }
+  
+  // Update the position from the player data
+  // Note: We set y=0.5 to place the cube on top of the ground (cube is 1x1x1)
+  playerMesh.position.set(playerData.x, 0.5, playerData.z);
+}
+
+/**
+ * Remove a player mesh from the scene
+ * @param {string} id - The player's unique ID
+ */
+function removePlayerMesh(id) {
+  const playerMesh = playerMeshes.get(id);
+  if (playerMesh) {
+    // Remove from scene
+    scene.remove(playerMesh);
+    
+    // Remove from map
+    playerMeshes.delete(id);
+    
+    console.log(`Removed player ${id} mesh`);
+  }
+}
+
+/**
+ * Update all player meshes based on the current game state
+ * @param {Object} state - The current game state
+ */
+function updatePlayerMeshes(state) {
+  if (!state || !state.players) return;
+  
+  // Get all current player IDs
+  const currentPlayerIds = new Set();
+  
+  // Update existing players and create new ones
+  state.players.forEach((playerData, id) => {
+    createOrUpdatePlayerMesh(id, playerData);
+    currentPlayerIds.add(id);
+  });
+  
+  // Remove any players that are no longer in the state
+  playerMeshes.forEach((mesh, id) => {
+    if (!currentPlayerIds.has(id)) {
+      removePlayerMesh(id);
+    }
+  });
+}
+
+/**
  * Connect to the Colyseus server and join the game room
  * @returns {Promise<void>} A promise that resolves when connected
  */
@@ -117,6 +205,9 @@ async function connectToServer() {
     // Set up room state change listener for future steps
     room.onStateChange((state) => {
       console.log("State updated:", state);
+      
+      // Update player meshes based on the new state
+      updatePlayerMeshes(state);
       
       if (state.players) {
         const playerCount = state.players.size;
