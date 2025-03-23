@@ -57,18 +57,28 @@ class GameRoom extends Room {
     // Create a new player with default values
     const player = new PlayerSchema();
     player.id = client.sessionId;
-    player.x = 0;
-    player.z = 0;
     
     // For testing step 9, assign the first player as human and others as zombies
     // Count current players to determine team
     const playerCount = this.state.players.size;
     player.team = playerCount === 0 ? "human" : "zombie";
     
+    // Assign random starting positions based on team
+    // Humans start on the right side (positive X), zombies on the left (negative X)
+    if (player.team === "human") {
+      // Humans: Random position on right half of map
+      player.x = Math.random() * 4 + 1; // Range: 1 to 5
+      player.z = Math.random() * 8 - 4; // Range: -4 to 4
+    } else {
+      // Zombies: Random position on left half of map
+      player.x = Math.random() * -4 - 1; // Range: -5 to -1
+      player.z = Math.random() * 8 - 4; // Range: -4 to 4
+    }
+    
     // Add the player to the game state
     this.state.players.set(client.sessionId, player);
     
-    console.log(`Player ${player.id} added to the game as ${player.team}`);
+    console.log(`Player ${player.id} added to the game as ${player.team} at position (${player.x.toFixed(2)}, ${player.z.toFixed(2)})`);
   }
 
   /**

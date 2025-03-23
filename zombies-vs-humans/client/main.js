@@ -199,9 +199,9 @@ function createOrUpdatePlayerMesh(id, playerData) {
     // Create a 1x1x1 cube geometry
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     
-    // Create material based on team (human = red, zombie = green)
+    // Create material based on team (human = green, zombie = red)
     const material = new THREE.MeshBasicMaterial({
-      color: playerData.team === 'human' ? 0xff0000 : 0x00ff00
+      color: playerData.team === 'human' ? 0x00ff00 : 0xff0000
     });
     
     // Create the mesh
@@ -216,7 +216,7 @@ function createOrUpdatePlayerMesh(id, playerData) {
     console.log(`Created ${playerData.team} cube for player ${id}`);
   } else {
     // Update the material color if the team changed
-    const color = playerData.team === 'human' ? 0xff0000 : 0x00ff00;
+    const color = playerData.team === 'human' ? 0x00ff00 : 0xff0000;
     if (playerMesh.material.color.getHex() !== color) {
       playerMesh.material.color.setHex(color);
       console.log(`Updated player ${id} color to ${playerData.team}`);
