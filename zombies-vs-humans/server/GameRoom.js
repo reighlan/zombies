@@ -38,6 +38,9 @@ class GameRoom extends Room {
     // Register message handlers for specific message types
     this.onMessage("move", this.handleMoveMessage.bind(this));
     
+    // Set up physics simulation (collision detection) with interval
+    this.setSimulationInterval(() => this.checkCollisions(), 50);
+    
     // Log room creation with any options
     console.log("Room created with options:", options);
   }
@@ -101,6 +104,77 @@ class GameRoom extends Room {
       player.z = data.z;
       
       console.log(`Player ${player.id} moved to (${player.x}, ${player.z})`);
+      
+      // Check for collisions immediately when a player moves
+      this.checkCollisions();
+    }
+  }
+
+  /**
+   * Calculate the distance between two players
+   * 
+   * @param {PlayerSchema} player1 - First player
+   * @param {PlayerSchema} player2 - Second player
+   * @returns {number} Distance between the players
+   */
+  calculateDistance(player1, player2) {
+    const dx = player1.x - player2.x;
+    const dz = player1.z - player2.z;
+    return Math.sqrt(dx * dx + dz * dz);
+  }
+
+  /**
+   * Check for collisions between zombies and humans
+   * If a zombie collides with a human (distance < 1 unit), turn the human into a zombie
+   */
+  checkCollisions() {
+    const { players } = this.state;
+    
+    // Skip if we have less than 2 players
+    if (players.size < 2) return;
+    
+    // Find all zombies and humans
+    const zombies = [];
+    const humans = [];
+    
+    players.forEach((player) => {
+      if (player.team === 'zombie') {
+        zombies.push(player);
+      } else if (player.team === 'human') {
+        humans.push(player);
+      }
+    });
+    
+    // If no humans or no zombies, skip collision check
+    if (humans.length === 0 || zombies.length === 0) return;
+    
+    // Check for collisions between zombies and humans
+    for (const zombie of zombies) {
+      for (const human of humans) {
+        const distance = this.calculateDistance(zombie, human);
+        
+        // If distance is less than 1 unit, collision occurred
+        if (distance < 1) {
+          console.log(`Collision detected! Zombie ${zombie.id} infected Human ${human.id}`);
+          
+          // Turn human into zombie
+          human.team = 'zombie';
+          
+          // Add to zombies array for further collision checks in this frame
+          zombies.push(human);
+          
+          // Remove from humans array
+          const index = humans.indexOf(human);
+          if (index !== -1) {
+            humans.splice(index, 1);
+          }
+        }
+      }
+    }
+    
+    // Check if all players are zombies (game over condition for Step 13)
+    if (humans.length === 0 && players.size > 0) {
+      console.log("All players are now zombies!");
     }
   }
 }

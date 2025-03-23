@@ -248,3 +248,37 @@ All tests passed for Step 10:
 - Movement feels responsive while maintaining network efficiency
 
 This implementation follows the server authority principle by having the server validate and broadcast all position updates. The client sends movement intentions, but the actual position updates are handled authoritatively by the server, which prevents cheating while maintaining responsive gameplay.
+
+### Step 11: Add Server-Side Physics Check
+
+- Enhanced `server/GameRoom.js` with collision detection:
+  - Added a simulation interval that runs collision checks every 50ms
+  - Implemented collision detection functions:
+    - `calculateDistance()`: Calculates the Euclidean distance between two players
+    - `checkCollisions()`: Identifies all humans and zombies and checks for collisions
+  - Added team change logic when collisions occur:
+    - When a zombie gets within 1 unit of a human, the human is turned into a zombie
+    - The human's team property is updated, which automatically propagates to all clients
+    - Added detailed logging of infection events
+  - Added immediate collision checking after player movement:
+    - When a player moves, collision detection runs immediately
+    - This provides responsive feedback when a zombie catches a human
+  - Added game over detection for when all players become zombies
+
+- Used a simple distance-based collision system:
+  - Calculated distance using the Pythagorean theorem (sqrt(dx² + dz²))
+  - Collision threshold set at 1.0 unit to match the cube size
+  - The collision check is efficient and scales with the number of players
+
+No additional client-side changes were needed since:
+  - The state synchronization from Step 8 already propagates team changes
+  - The cube color update logic from Step 9 automatically reflects team changes
+
+All tests passed for Step 11:
+- When a zombie player moves close to a human player, the human turns into a zombie
+- The human player's cube changes from red to green in all connected clients
+- The server logs show "Collision detected!" messages with player IDs
+- The transformation happens immediately when players get within 1 unit
+- The collision system works with multiple players and handles chain reactions
+
+This implementation follows Cursor Rule #3 for server-side physics, ensuring that all collision detection and team changes are handled authoritatively by the server. The distance-based approach provides a simple yet effective collision system that supports the core game mechanic of zombies converting humans.
