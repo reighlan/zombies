@@ -12,12 +12,14 @@ class GameState extends Schema {
     // Initialize an empty MapSchema for players
     this.players = new MapSchema();
     
-    // Game status and timer will be implemented in future steps
+    // Game timer - 5 minutes (300 seconds)
+    this.timeRemaining = 300;
   }
 }
 
 // Define types for GameState properties
 type({ map: PlayerSchema })(GameState.prototype, "players");
+type("number")(GameState.prototype, "timeRemaining");
 
 /**
  * GameRoom - The main room handling multiplayer gameplay
@@ -35,6 +37,9 @@ class GameRoom extends Room {
     // Set the room state
     this.setState(new GameState());
     
+    // Timer interval reference
+    this.timerInterval = null;
+    
     // Register message handlers for specific message types
     this.onMessage("move", this.handleMoveMessage.bind(this));
     
@@ -43,6 +48,33 @@ class GameRoom extends Room {
     
     // Log room creation with any options
     console.log("Room created with options:", options);
+  }
+
+  /**
+   * Starts the game timer that counts down from 5 minutes
+   */
+  startGameTimer() {
+    // Only start the timer if it's not already running
+    if (this.timerInterval) return;
+    
+    console.log("Starting game timer! 5 minutes on the clock.");
+    
+    // Set interval to decrease timer every second
+    this.timerInterval = setInterval(() => {
+      // Decrease time remaining
+      this.state.timeRemaining--;
+      
+      // Log current time every 5 seconds
+      if (this.state.timeRemaining % 5 === 0 || this.state.timeRemaining <= 10) {
+        console.log(`Time remaining: ${this.state.timeRemaining} seconds`);
+      }
+      
+      // When time runs out, stop the timer
+      if (this.state.timeRemaining <= 0) {
+        console.log("Time's up!");
+        clearInterval(this.timerInterval);
+      }
+    }, 1000);
   }
 
   /**
@@ -79,6 +111,11 @@ class GameRoom extends Room {
     this.state.players.set(client.sessionId, player);
     
     console.log(`Player ${player.id} added to the game as ${player.team} at position (${player.x.toFixed(2)}, ${player.z.toFixed(2)})`);
+    
+    // Start the timer if we now have at least 2 players and timer isn't running yet
+    if (this.state.players.size >= 2 && !this.timerInterval) {
+      this.startGameTimer();
+    }
   }
 
   /**
@@ -94,6 +131,16 @@ class GameRoom extends Room {
     if (this.state.players.has(client.sessionId)) {
       this.state.players.delete(client.sessionId);
       console.log(`Player ${client.sessionId} removed from the game`);
+    }
+    
+    // If no players left, stop the timer
+    if (this.state.players.size === 0 && this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+      console.log("Game timer stopped - no players remaining");
+      
+      // Reset the timer for a new game
+      this.state.timeRemaining = 300;
     }
   }
 

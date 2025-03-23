@@ -35,8 +35,9 @@ const MOVEMENT_SPEED = 0.1; // Units per frame
 let lastMovementUpdate = 0;
 const MOVEMENT_UPDATE_RATE = 50; // Send updates every 50ms
 
-// Debug element reference
+// UI elements
 const debugElement = document.getElementById('debug');
+const timerElement = document.getElementById('timer');
 
 /**
  * Update the debug information display
@@ -47,6 +48,28 @@ function updateDebug(message) {
     debugElement.textContent = message;
   }
   console.log(message);
+}
+
+/**
+ * Update the game timer display
+ * @param {number} timeRemaining - The time remaining in seconds
+ */
+function updateGameTimer(timeRemaining) {
+  if (timerElement) {
+    // Format time as minutes:seconds
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    timerElement.textContent = `Time: ${formattedTime}`;
+    
+    // Change color based on time remaining
+    if (timeRemaining <= 60) {
+      timerElement.style.color = 'red';
+    } else {
+      timerElement.style.color = 'white';
+    }
+  }
 }
 
 /**
@@ -298,6 +321,11 @@ async function connectToServer() {
       
       // Update player meshes based on the new state
       updatePlayerMeshes(state);
+      
+      // Update timer if available
+      if (typeof state.timeRemaining === 'number') {
+        updateGameTimer(state.timeRemaining);
+      }
       
       if (state.players) {
         const playerCount = state.players.size;
