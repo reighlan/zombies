@@ -49,6 +49,7 @@
         <div id="room-id">Room ID: None</div>
         <div id="player-id">Player ID: None</div>
         <div id="game-timer">Time Remaining: Not started</div>
+        <div id="game-status">Status: Playing</div>
     </div>
     
     <div id="players-list">
@@ -67,6 +68,7 @@
         const playerIdElement = document.getElementById('player-id');
         const playersList = document.getElementById('players');
         const gameTimer = document.getElementById('game-timer');
+        const gameStatus = document.getElementById('game-status');
         
         // Colyseus client
         let client;
@@ -112,6 +114,17 @@
                     if (state && typeof state.timeRemaining === 'number') {
                         updateGameTimer(state.timeRemaining);
                     }
+                    
+                    // Update game status if available
+                    if (state && state.gameStatus) {
+                        updateGameStatus(state.gameStatus, state.winnerMessage);
+                    }
+                });
+                
+                // Handle game over message
+                room.onMessage("gameOver", (message) => {
+                    console.log("Game over message received:", message);
+                    updateGameStatus(message.status, message.message);
                 });
                 
                 // Handle room leave
@@ -202,6 +215,35 @@
             }
         }
         
+        // Update game status display
+        function updateGameStatus(status, message) {
+            console.log("Updating game status:", status, message);
+            
+            // Default status text and color if no message
+            let statusText = "Status: Playing";
+            let statusColor = "black";
+            
+            // Set status text and color based on game status
+            if (status === "zombies_win") {
+                statusText = message || "Zombies Win!";
+                statusColor = "green";
+            } else if (status === "humans_win") {
+                statusText = message || "Humans Win!";
+                statusColor = "blue";
+            }
+            
+            // Update the game status display
+            gameStatus.textContent = statusText;
+            gameStatus.style.color = statusColor;
+            
+            // If game is over, add a bold style
+            if (status !== "playing") {
+                gameStatus.style.fontWeight = "bold";
+            } else {
+                gameStatus.style.fontWeight = "normal";
+            }
+        }
+        
         // Reset the UI
         function resetUI() {
             connectBtn.disabled = false;
@@ -210,6 +252,9 @@
             playerIdElement.textContent = 'Player ID: None';
             gameTimer.textContent = 'Time Remaining: Not started';
             gameTimer.style.color = 'black';
+            gameStatus.textContent = 'Status: Playing';
+            gameStatus.style.color = 'black';
+            gameStatus.style.fontWeight = 'normal';
             playersList.innerHTML = '';
             const li = document.createElement('li');
             li.textContent = 'No players in the room';

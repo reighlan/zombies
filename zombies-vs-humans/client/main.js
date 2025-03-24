@@ -31,13 +31,14 @@ const keys = {
   s: false,
   d: false
 };
-const MOVEMENT_SPEED = 0.1; // Units per frame
+const MOVEMENT_SPEED = 2.0; // Units per frame - increased for larger map
 let lastMovementUpdate = 0;
 const MOVEMENT_UPDATE_RATE = 50; // Send updates every 50ms
 
 // UI elements
 const debugElement = document.getElementById('debug');
 const timerElement = document.getElementById('timer');
+const gameOverElement = document.getElementById('game-over');
 
 /**
  * Update the debug information display
@@ -73,6 +74,31 @@ function updateGameTimer(timeRemaining) {
 }
 
 /**
+ * Display game over message
+ * @param {string} status - The game status ("humans_win" or "zombies_win")
+ * @param {string} message - The message to display
+ */
+function showGameOver(status, message) {
+  if (gameOverElement) {
+    // Set message
+    gameOverElement.textContent = message;
+    
+    // Set color based on winner
+    if (status === 'humans_win') {
+      gameOverElement.style.color = '#00aaff';
+    } else if (status === 'zombies_win') {
+      gameOverElement.style.color = '#ff5555';
+    }
+    
+    // Show the game over message
+    gameOverElement.style.display = 'block';
+    
+    // Log game over
+    console.log(`Game Over: ${message}`);
+  }
+}
+
+/**
  * Initialize the ThreeJS scene, camera, and renderer
  */
 function initScene() {
@@ -104,11 +130,11 @@ function initScene() {
 }
 
 /**
- * Create the ground plane (10x10 units at y=0)
+ * Create the ground plane (1000x1000 units at y=0)
  */
 function createGround() {
-  // Create a 10x10 plane geometry
-  const geometry = new THREE.PlaneGeometry(10, 10);
+  // Create a 1000x1000 plane geometry
+  const geometry = new THREE.PlaneGeometry(1000, 1000);
   
   // Create a green material for the ground
   const material = new THREE.MeshBasicMaterial({
@@ -195,9 +221,9 @@ function updatePlayerPosition() {
       const newX = localPlayer.x + dx;
       const newZ = localPlayer.z + dz;
       
-      // Ensure the player stays within the ground plane bounds (10x10)
-      const boundedX = Math.max(-5, Math.min(5, newX));
-      const boundedZ = Math.max(-5, Math.min(5, newZ));
+      // Ensure the player stays within the ground plane bounds (1000x1000)
+      const boundedX = Math.max(-500, Math.min(500, newX));
+      const boundedZ = Math.max(-500, Math.min(500, newZ));
       
       // Send the position update to the server
       room.send('move', { x: boundedX, z: boundedZ });
@@ -327,6 +353,11 @@ async function connectToServer() {
         updateGameTimer(state.timeRemaining);
       }
       
+      // Check for game over
+      if (state.gameStatus && state.gameStatus !== 'playing') {
+        showGameOver(state.gameStatus, state.winnerMessage);
+      }
+      
       if (state.players) {
         const playerCount = state.players.size;
         updateDebug(`Connected as ${room.sessionId} | Players: ${playerCount}`);
@@ -336,6 +367,12 @@ async function connectToServer() {
           console.log(`Player ${key}: Team=${player.team}, Position=(${player.x}, ${player.z})`);
         });
       }
+    });
+    
+    // Handle game over message
+    room.onMessage("gameOver", (message) => {
+      console.log("Game over message received:", message);
+      showGameOver(message.status, message.message);
     });
     
     // Handle room leave event
@@ -392,6 +429,11 @@ async function init() {
   
   // Set up the scene, camera, and renderer
   initScene();
+  
+  // Update camera for larger map
+  camera.far = 2000; // Increase far plane to see farther
+  camera.position.set(0, 100, 200); // Position camera higher and further back
+  camera.updateProjectionMatrix();
   
   // Create the ground plane
   createGround();

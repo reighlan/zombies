@@ -40,6 +40,21 @@
             border-radius: 5px;
             pointer-events: none;
         }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            font-family: monospace;
+            font-size: 24px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            pointer-events: none;
+        }
     </style>
     
     <!-- Load Colyseus in the head to ensure it's available before any scripts run -->
@@ -54,6 +69,9 @@
     
     <!-- Game timer display -->
     <div id="timer">Time: --:--</div>
+    
+    <!-- Game over message display (hidden by default) -->
+    <div id="game-over"></div>
     
     <!-- Load main JavaScript file as a module to support ES6 imports -->
     <script type="module" src="main.js"></script>

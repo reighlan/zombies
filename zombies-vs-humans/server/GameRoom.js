@@ -14,12 +14,20 @@ class GameState extends Schema {
     
     // Game timer - 5 minutes (300 seconds)
     this.timeRemaining = 300;
+    
+    // Game status - "playing", "humans_win", or "zombies_win"
+    this.gameStatus = "playing";
+    
+    // Winner message to be displayed to clients
+    this.winnerMessage = "";
   }
 }
 
 // Define types for GameState properties
 type({ map: PlayerSchema })(GameState.prototype, "players");
 type("number")(GameState.prototype, "timeRemaining");
+type("string")(GameState.prototype, "gameStatus");
+type("string")(GameState.prototype, "winnerMessage");
 
 /**
  * GameRoom - The main room handling multiplayer gameplay
@@ -69,10 +77,14 @@ class GameRoom extends Room {
         console.log(`Time remaining: ${this.state.timeRemaining} seconds`);
       }
       
+      // Check win conditions
+      this.checkWinConditions();
+      
       // When time runs out, stop the timer
       if (this.state.timeRemaining <= 0) {
         console.log("Time's up!");
         clearInterval(this.timerInterval);
+        this.timerInterval = null;
       }
     }, 1000);
   }
@@ -99,12 +111,12 @@ class GameRoom extends Room {
     // Humans start on the right side (positive X), zombies on the left (negative X)
     if (player.team === "human") {
       // Humans: Random position on right half of map
-      player.x = Math.random() * 4 + 1; // Range: 1 to 5
-      player.z = Math.random() * 8 - 4; // Range: -4 to 4
+      player.x = Math.random() * 100 + 50; // Range: 50 to 150
+      player.z = Math.random() * 200 - 100; // Range: -100 to 100
     } else {
       // Zombies: Random position on left half of map
-      player.x = Math.random() * -4 - 1; // Range: -5 to -1
-      player.z = Math.random() * 8 - 4; // Range: -4 to 4
+      player.x = Math.random() * -100 - 50; // Range: -150 to -50
+      player.z = Math.random() * 200 - 100; // Range: -100 to 100
     }
     
     // Add the player to the game state
@@ -182,13 +194,13 @@ class GameRoom extends Room {
 
   /**
    * Check for collisions between zombies and humans
-   * If a zombie collides with a human (distance < 1 unit), turn the human into a zombie
+   * If a zombie collides with a human (distance < 5 units), turn the human into a zombie
    */
   checkCollisions() {
     const { players } = this.state;
     
-    // Skip if we have less than 2 players
-    if (players.size < 2) return;
+    // Skip if we have less than 2 players or game is over
+    if (players.size < 2 || this.state.gameStatus !== "playing") return;
     
     // Find all zombies and humans
     const zombies = [];
@@ -210,8 +222,8 @@ class GameRoom extends Room {
       for (const human of humans) {
         const distance = this.calculateDistance(zombie, human);
         
-        // If distance is less than 1 unit, collision occurred
-        if (distance < 1) {
+        // If distance is less than 5 units, collision occurred
+        if (distance < 5) {
           console.log(`Collision detected! Zombie ${zombie.id} infected Human ${human.id}`);
           
           // Turn human into zombie
@@ -229,10 +241,73 @@ class GameRoom extends Room {
       }
     }
     
-    // Check if all players are zombies (game over condition for Step 13)
-    if (humans.length === 0 && players.size > 0) {
-      console.log("All players are now zombies!");
+    // Check win conditions after player state changes
+    this.checkWinConditions();
+  }
+  
+  /**
+   * Check win conditions and update game status accordingly
+   * 
+   * Win conditions:
+   * - Zombies win if all players are zombies
+   * - Humans win if the timer reaches 0 and at least one human is still alive
+   */
+  checkWinConditions() {
+    // Only check if the game is still in progress
+    if (this.state.gameStatus !== "playing") return;
+    
+    const { players } = this.state;
+    
+    // Skip if no players
+    if (players.size === 0) return;
+    
+    // Count humans and zombies
+    let humanCount = 0;
+    
+    players.forEach((player) => {
+      if (player.team === 'human') {
+        humanCount++;
+      }
+    });
+    
+    // Check if all players are zombies (humanCount === 0)
+    if (humanCount === 0) {
+      this.endGame("zombies_win", "Zombies Win! All humans have been infected.");
+      return;
     }
+    
+    // Check if time ran out and humans still remain
+    if (this.state.timeRemaining <= 0 && humanCount > 0) {
+      this.endGame("humans_win", "Humans Win! They survived the zombie apocalypse.");
+      return;
+    }
+  }
+  
+  /**
+   * End the game with the specified winner
+   * 
+   * @param {string} status - The game status ("humans_win" or "zombies_win")
+   * @param {string} message - The winner message to display
+   */
+  endGame(status, message) {
+    // Set game status and winner message
+    this.state.gameStatus = status;
+    this.state.winnerMessage = message;
+    
+    // Stop the timer if it's running
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+    
+    // Log the game result
+    console.log(`Game Over! ${message}`);
+    
+    // Broadcast game over message to all clients
+    this.broadcast("gameOver", {
+      status: status,
+      message: message
+    });
   }
 }
 

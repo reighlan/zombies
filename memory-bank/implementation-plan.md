@@ -113,7 +113,55 @@ This plan outlines step-by-step instructions to build the base multiplayer game 
 
 ---
 
-**Step 14: Deploy Backend to Heroku**
+## Step 14: Expand the Map Size
+
+**Instruction:**  
+In `client/main.js`, modify the ThreeJS ground plane to be 100 times larger (1000x1000 units instead of 10x10). Update the camera’s far plane and position to accommodate the larger map.
+
+**Details:**  
+Adjust the plane geometry and camera settings to ensure the entire map is visible and navigable.
+
+**Test:**  
+Load `client/index.html` in a browser and verify the ground plane is significantly larger (e.g., move a player across it and confirm it takes much longer to reach the edge).
+
+---
+
+## Step 15: Expand the City-Like Environment
+
+**Instruction:**  
+In `client/main.js`, add ThreeJS objects to create a city-like environment:
+
+- Rectangular blocks (e.g., 5x5x10 units) as buildings  
+- Smaller cubes or planes as hiding spots (e.g., behind buildings)
+
+**Details:**  
+Randomly place 20–30 buildings and 10–15 hiding spots across the 1000x1000 map, ensuring they align with the GDD’s blocky aesthetic.
+
+**Test:**  
+Load `client/index.html` and confirm buildings and hiding spots render on the map. Move a player to a hiding spot and verify it obstructs visibility from certain angles.
+
+---
+
+## Step 16: Seed Map with Special Items
+
+**Instruction:**  
+In `server/GameRoom.js` and `client/main.js`, add logic to:
+
+- Define item schemas (Flower of Life, Cola, Baseball Bat) with `x`, `z` coordinates  
+- Seed 10–15 of each item type at random positions on the server  
+- Render items as distinct ThreeJS objects (e.g., spheres or small cubes) on the client
+
+**Details:**  
+Use unique colors or shapes per the GDD:
+- Yellow for Flower of Life  
+- Silver for Cola  
+- Brown for Baseball Bat
+
+**Test:**  
+Start the server and load `client/index.html`. Verify 30–45 total items appear scattered across the map with distinct visuals, and confirm their positions match between server logs and client rendering.
+
+
+**Step 17: Deploy Backend to Heroku**
 
 * **Instruction**: Create a Procfile in the root with web: node server/index.js, push the project to a Heroku app, and deploy it.  
 * **Details**: Ensure WebSocket support is enabled on Heroku.  
@@ -121,7 +169,7 @@ This plan outlines step-by-step instructions to build the base multiplayer game 
 
 ---
 
-**Step 15: Deploy Frontend to Netlify**
+**Step 18: Deploy Frontend to Netlify**
 
 * **Instruction**: Push the client/ folder to a Netlify site, updating the Colyseus client URL in client/main.js to the Heroku WebSocket address.  
 * **Details**: Use Netlify's drag-and-drop or CLI deployment.  
